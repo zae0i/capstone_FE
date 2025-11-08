@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import api from '@/api';
 import { Link } from 'react-router-dom';
+import KakaoPayButton from '@/components/KakaoPayButton';
 
 interface TransactionRequest {
   merchantName: string;
@@ -10,21 +11,18 @@ interface TransactionRequest {
   transactionDate: string;
   latitude?: number;
   longitude?: number;
+  source: string; // Added source field
 }
 
-interface TransactionResponse {
-  transactionId: number;
-  esgScore: number;
-  pointsEarned: number;
-  message: string;
-}
+// ...
 
 const TransactionSubmission = () => {
   const [formData, setFormData] = useState<TransactionRequest>({
     merchantName: '',
     merchantCategory: '',
     transactionAmount: 0,
-    transactionDate: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm
+    transactionDate: new Date().toISOString().slice(0, 16),
+    source: 'MOCK', // Changed source to MOCK to match backend enum
   });
   const [submissionResult, setSubmissionResult] = useState<TransactionResponse | null>(null);
 
@@ -54,10 +52,23 @@ const TransactionSubmission = () => {
       alert('모든 필수 항목을 올바르게 입력해주세요.');
       return;
     }
+
+    const amount = Number(formData.transactionAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('거래 금액은 0보다 큰 유효한 숫자여야 합니다.');
+      return;
+    }
+
+    const transactionDate = new Date(formData.transactionDate);
+    if (isNaN(transactionDate.getTime())) {
+      alert('거래 일시가 유효하지 않습니다.');
+      return;
+    }
+
     mutate({
       ...formData,
-      transactionAmount: Number(formData.transactionAmount),
-      transactionDate: new Date(formData.transactionDate).toISOString(), // Ensure full ISO format
+      transactionAmount: amount,
+      transactionDate: transactionDate.toISOString(), // Ensure full ISO format
       // Add dummy coordinates as they are required by DTO but not collected from user
       latitude: 37.5665,
       longitude: 126.9780,
@@ -66,19 +77,6 @@ const TransactionSubmission = () => {
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
-      <header style={{ backgroundColor: '#28a745', color: 'white', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h1 style={{ margin: 0, fontSize: '1.6em' }}>GreenPoint</h1>
-        <nav>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', alignItems: 'center', gap: '25px' }}>
-            <li><Link to="/dashboard" style={{ color: 'white', textDecoration: 'none' }}>대시보드</Link></li>
-            <li><Link to="/transactions" style={{ color: 'white', textDecoration: 'none' }}>전체 내역</Link></li>
-            <li><Link to="/submission" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>거래 제출</Link></li>
-            <li><Link to="/ranking" style={{ color: 'white', textDecoration: 'none' }}>랭킹</Link></li>
-            <li><Link to="/report" style={{ color: 'white', textDecoration: 'none' }}>리포트</Link></li>
-          </ul>
-        </nav>
-      </header>
-
       <main style={{ padding: '30px', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
           <h2 style={{ color: '#333', marginBottom: '30px', textAlign: 'center' }}>거래 내역 직접 제출</h2>
@@ -115,6 +113,11 @@ const TransactionSubmission = () => {
               </button>
             </div>
           )}
+
+          <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center' }}>
+            <h3 style={{ marginBottom: '20px' }}>카카오페이로 결제하기</h3>
+            <KakaoPayButton amount={Number(formData.transactionAmount)} />
+          </div>
         </div>
       </main>
     </div>

@@ -11,6 +11,9 @@ import Report from '@/pages/Report';
 import Admin from '@/pages/Admin';
 import NotFound from '@/pages/NotFound';
 import PrivateRoute from './PrivateRoute';
+import KakaoPaySuccess from '@/pages/KakaoPaySuccess';
+import KakaoPayCancel from '@/pages/KakaoPayCancel';
+import KakaoPayFail from '@/pages/KakaoPayFail';
 
 const router = createBrowserRouter([
   {
@@ -56,6 +59,18 @@ const router = createBrowserRouter([
       {
         path: '/admin',
         element: <Admin />,
+      },
+      {
+        path: '/payment/success/:txId',
+        element: <KakaoPaySuccess />,
+      },
+      {
+        path: '/payment/cancel',
+        element: <KakaoPayCancel />,
+      },
+      {
+        path: '/payment/fail',
+        element: <KakaoPayFail />,
       },
     ],
   },

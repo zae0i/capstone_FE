@@ -34,27 +34,6 @@ const Report = () => {
       backgroundColor: '#f0f2f5',
       fontFamily: 'Arial, sans-serif'
     }}>
-      <header style={{
-        backgroundColor: '#28a745',
-        color: 'white',
-        padding: '15px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h1 style={{ margin: 0, fontSize: '1.5em' }}>개인 리포트</h1>
-        <nav>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', gap: '20px' }}>
-            <li><Link to="/dashboard" style={{ color: 'white', textDecoration: 'none' }}>대시보드</Link></li>
-            <li><Link to="/transactions" style={{ color: 'white', textDecoration: 'none' }}>거래 내역</Link></li>
-            <li><Link to="/ranking" style={{ color: 'white', textDecoration: 'none' }}>랭킹</Link></li>
-            <li><Link to="/report" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>리포트</Link></li>
-            <li><Link to="/mypage" style={{ color: 'white', textDecoration: 'none' }}>마이페이지</Link></li>
-          </ul>
-        </nav>
-      </header>
-
       <main style={{
         flexGrow: 1,
         padding: '20px',
