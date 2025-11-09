@@ -13,4 +13,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const getMerchantNames = async () => {
+  const response = await api.get<{ id: number; name: string }[]>('/merchants/names');
+  return response.data;
+};
+
 export default api;

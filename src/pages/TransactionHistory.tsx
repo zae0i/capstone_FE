@@ -99,11 +99,15 @@ const TransactionHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction) => (
-                    <tr key={transaction.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px' }}>{new Date(transaction.transactionDate).toLocaleDateString()}</td>
-                      <td style={{ padding: '12px' }}>{transaction.merchant}</td>
-                      <td style={{ padding: '12px' }}>{transaction.category}</td>
+                  {transactions.map((transaction, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '12px' }}>
+                        {transaction.txTime && !isNaN(new Date(transaction.txTime).getTime())
+                          ? new Date(transaction.txTime).toLocaleDateString()
+                          : 'N/A'}
+                      </td>
+                      <td style={{ padding: '12px' }}>{transaction.merchantName}</td>
+                      <td style={{ padding: '12px' }}>{transaction.categoryName}</td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>{transaction.amount?.toLocaleString()}원</td>
                       <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: transaction.type === 'EARN' ? '#28a745' : '#dc3545' }}>
                         {transaction.type === 'EARN' ? '+' : '-'} {transaction.pointsEarned || 0}

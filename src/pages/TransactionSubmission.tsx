@@ -1,30 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import api from '@/api';
+import api, { getMerchantNames } from '@/api';
 import { Link } from 'react-router-dom';
 import KakaoPayButton from '@/components/KakaoPayButton';
 
+interface Merchant {
+  id: number;
+  name: string;
+}
+
 interface TransactionRequest {
-  merchantName: string;
+  merchantId: number; // Changed from merchantName to merchantId
   merchantCategory: string;
   transactionAmount: number;
   transactionDate: string;
   latitude?: number;
   longitude?: number;
-  source: string; // Added source field
+  source: string;
 }
 
-// ...
+interface TransactionResponse {
+  message: string;
+  esgScore: number;
+  pointsEarned: number;
+}
 
 const TransactionSubmission = () => {
-  const [formData, setFormData] = useState<TransactionRequest>({
-    merchantName: '',
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [selectedMerchantId, setSelectedMerchantId] = useState<number | ''>('');
+  const [formData, setFormData] = useState<Omit<TransactionRequest, 'merchantId'>>({
     merchantCategory: '',
     transactionAmount: 0,
     transactionDate: new Date().toISOString().slice(0, 16),
-    source: 'MOCK', // Changed source to MOCK to match backend enum
+    source: 'MOCK',
   });
   const [submissionResult, setSubmissionResult] = useState<TransactionResponse | null>(null);
+
+  useEffect(() => {
+    const fetchMerchants = async () => {
+      try {
+        const data = await getMerchantNames();
+        setMerchants(data);
+        if (data.length > 0) {
+          setSelectedMerchantId(data[0].id); // Select the first merchant by default
+        }
+      } catch (error) {
+        console.error('Failed to fetch merchant names:', error);
+        alert('가맹점 목록을 불러오는데 실패했습니다.');
+      }
+    };
+    fetchMerchants();
+  }, []);
 
   const { mutate, isPending } = useMutation<TransactionResponse, Error, TransactionRequest>({
     mutationFn: async (transactionData) => {
@@ -42,13 +68,17 @@ const TransactionSubmission = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'selectedMerchantId') {
+      setSelectedMerchantId(Number(value));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Basic validation
-    if (!formData.merchantName || !formData.merchantCategory || formData.transactionAmount <= 0) {
+    if (!selectedMerchantId || !formData.merchantCategory || formData.transactionAmount <= 0) {
       alert('모든 필수 항목을 올바르게 입력해주세요.');
       return;
     }
@@ -66,10 +96,10 @@ const TransactionSubmission = () => {
     }
 
     mutate({
+      merchantId: Number(selectedMerchantId),
       ...formData,
       transactionAmount: amount,
-      transactionDate: transactionDate.toISOString(), // Ensure full ISO format
-      // Add dummy coordinates as they are required by DTO but not collected from user
+      transactionDate: transactionDate.toISOString(),
       latitude: 37.5665,
       longitude: 126.9780,
     });
@@ -85,7 +115,20 @@ const TransactionSubmission = () => {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>가맹점 이름</label>
-                <input type="text" name="merchantName" value={formData.merchantName} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} />
+                <select
+                  name="selectedMerchantId"
+                  value={selectedMerchantId}
+                  onChange={handleChange}
+                  required
+                  style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                >
+                  <option value="" disabled>가맹점을 선택하세요</option>
+                  {merchants.map((merchant) => (
+                    <option key={merchant.id} value={merchant.id}>
+                      {merchant.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>카테고리</label>

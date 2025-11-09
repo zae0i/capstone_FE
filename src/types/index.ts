@@ -27,12 +27,19 @@ export interface PaymentTransaction {
   pointsEarned?: number;
 }
 
+export interface CreateTransactionRequest {
+  merchant: string;
+  category: string;
+  amount: number;
+  txTime: string;
+  latitude: number;
+  longitude: number;
+}
+
 // For GET /rewards/history
 export interface RewardDetails {
   id: number;
-  transactionDate: string;
-  merchant: string;
-  category: string;
+  categoryName: string;
   type: 'EARN' | 'USE';
   amount: number;
   pointsEarned: number;
@@ -53,10 +60,7 @@ export interface MyRanking {
   points: number;
 }
 
-export interface RankingResponse {
-  topRankings: RankingInfo[];
-  myRank: MyRanking;
-}
+
 
 export interface CategoryBreakdown {
   categoryName: string;

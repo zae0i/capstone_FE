@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 
-import { create } from 'zustand';
-import { User } from '@/types';
+import { UserProfile } from '@/types';
 
 interface AuthState {
   accessToken: string | null;
-  user: User | null;
+  user: UserProfile | null;
   login: (token: string) => void;
   logout: () => void;
-  setUser: (user: User | null) => void;
+  setUser: (user: UserProfile | null) => void;
+  clearTokens: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -23,4 +23,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ accessToken: null, user: null });
   },
   setUser: (user) => set({ user }),
+  clearTokens: () => {
+    set((state) => {
+      state.logout();
+      return state;
+    });
+  },
 }));

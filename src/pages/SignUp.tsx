@@ -12,7 +12,13 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/auth/signup", { email, password, nickname, region });
+      const dataToSend = {
+        email,
+        password,
+        nickname,
+        region: region === "" ? null : region,
+      };
+      await api.post("/auth/signup", dataToSend);
       alert("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
       navigate("/login");
     } catch (error) {
@@ -124,7 +130,6 @@ const SignUp = () => {
               id="region"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
-              required
               style={{
                 width: '100%',
                 padding: '12px 10px',

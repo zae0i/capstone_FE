@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/api";
-import { UserProfile, UserBalance, RewardDetails } from "@/types";
+import { UserProfile, UserBalance, RewardDetails, CreateTransactionRequest } from "@/types";
 import DailyReportChart from "@/components/DailyReportChart";
 import { useEffect } from 'react';
 
@@ -39,18 +39,19 @@ const Dashboard = () => {
     enabled: !!userId, // Only run this query when userId is available
   });
 
-  // 3. Fetch today's transactions for the chart
+  // 3. Fetch today's daily report
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  const { data: todayTransactions, isLoading: isLoadingChartData } = useQuery<RewardDetails[], Error>({
-    queryKey: ['todayTransactions', today],
+  const { data: dailyReport, isLoading: isLoadingChartData } = useQuery<ReportResponseDto, Error>({
+    queryKey: ['dailyReport', userId, today],
     queryFn: async () => {
-      const response = await api.get<{ content: RewardDetails[] }>(`/rewards/history?from=${today}&to=${today}`);
-      return response.data.content;
+      const response = await api.get<ReportResponseDto>(`/users/${userId}/daily-report?date=${today}`);
+      return response.data;
     },
+    enabled: !!userId, // Only run this query when userId is available
   });
 
   // 4. Mutation for simulating a transaction
-  const { mutate: simulatePayment } = useMutation<any, Error, Partial<RewardDetails>>({
+  const { mutate: simulatePayment } = useMutation<any, Error, CreateTransactionRequest>({
     mutationFn: async (transactionData) => {
       const response = await api.post('/transactions', transactionData);
       return response.data;
@@ -193,9 +194,9 @@ const Dashboard = () => {
     const merchantName = merchants[Math.floor(Math.random() * merchants.length)];
 
     simulatePayment({
-      merchantName,
-      merchantCategory,
-      transactionAmount,
+      merchant: merchantName,
+      category: merchantCategory,
+      amount: transactionAmount,
       transactionDate: new Date().toISOString(),
       latitude: 37.5665, // Dummy data
       longitude: 126.9780, // Dummy data
@@ -229,7 +230,7 @@ const Dashboard = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px', alignItems: 'flex-start' }}>
             <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
               <h3 style={{ color: '#333', marginBottom: '20px' }}>일일 소비 리포트</h3>
-              {isLoadingChartData ? <p>차트 데이터 로딩 중...</p> : <DailyReportChart data={todayTransactions} />}
+              {isLoadingChartData ? <p>차트 데이터 로딩 중...</p> : <DailyReportChart data={dailyReport} />}
             </div>
             <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
               <h3 style={{ color: '#333', marginBottom: '20px' }}>최근 리워드 내역</h3>
