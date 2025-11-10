@@ -87,8 +87,8 @@ const Ranking = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {topRankings?.map((item) => (
-                    <tr key={item.userId} style={{ borderBottom: '1px solid #eee' }}>
+                  {topRankings?.map((item, index) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                       <td style={{ padding: '12px', textAlign: 'center', fontWeight: 'bold', color: '#007bff' }}>{item.rank}</td>
                       <td style={{ padding: '12px', textAlign: 'left' }}>{item.nickname}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>{item.level}</td>

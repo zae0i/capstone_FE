@@ -249,11 +249,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div style={{ marginTop: '30px', textAlign: 'center' }}>
-          <button onClick={handleSimulatePayment} style={{ backgroundColor: '#007bff', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '5px', cursor: 'pointer', fontSize: '1em', fontWeight: 'bold' }}>
-            거래 내역 제출 (모의)
-          </button>
-        </div>
+
       </main>
     </div>
   );

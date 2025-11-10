@@ -62,26 +62,26 @@ export interface MyRanking {
 
 
 
-export interface CategoryBreakdown {
-  categoryName: string;
-  totalAmount: number;
+export interface CategoryReport {
+  category: string;
   transactionCount: number;
+  totalAmount: number;
+  esgScore: number;
 }
 
-export interface TopMerchant {
+export interface TopEsgMerchant {
   merchantName: string;
+  visitCount: number;
   totalAmount: number;
-  transactionCount: number;
+  esgScore: number;
 }
 
 export interface ReportResponse {
-  userId: number;
-  nickname: string;
-  period: string,
-  totalPointsEarned: number;
-  totalTransactions: number;
-  categoryBreakdown: CategoryBreakdown[];
-  topMerchants: TopMerchant[];
+  totalEsgScore: number;
+  totalConsumption: number;
+  ecoFriendlyPaymentsCount: number;
+  categoryReports: CategoryReport[];
+  topEsgMerchants: TopEsgMerchant[];
 }
 
 // For /admin APIs
@@ -115,3 +115,18 @@ export interface UserBalance {
   points: number;
   recentRewards: RecentReward[];
 }
+
+export interface RewardTransactionHistoryDto {
+  rewardPointId: number;
+  points: number;
+  esgScore: number;
+  rewardReason: string;
+  rewardCreatedAt: string;
+  transactionId: number;
+  transactionAmount: number;
+  transactionTime: string;
+  merchantName: string;
+  transactionSource: string;
+  transactionStatus: string;
+}
+

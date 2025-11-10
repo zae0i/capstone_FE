@@ -1,29 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useAuthStore } from '@/store/auth';
-import { Link } from 'react-router-dom';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ReportResponse } from '@/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6666'];
 
 const Report = () => {
-  const { user } = useAuthStore();
-  const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
-
-  const userId = user?.id; // Assuming user object has an id
-
-  const { data: userReport, isLoading, isError, error } = useQuery<ReportResponse, Error>({
-    queryKey: ['userReport', userId, period],
+  const { data: reportData, isLoading, isError, error } = useQuery<ReportResponse, Error>({
+    queryKey: ['report'],
     queryFn: async () => {
-      if (!userId) {
-        throw new Error('User ID is not available.');
-      }
-      const response = await api.get<ReportResponse>(`/users/${userId}/report?period=${period}`);
+      const response = await api.get<ReportResponse>('/report');
       return response.data;
     },
-    enabled: !!userId, // Only fetch if userId is available
   });
 
   return (
@@ -47,71 +36,70 @@ const Report = () => {
           borderRadius: '10px',
           boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
           width: '100%',
-          maxWidth: '1000px',
+          maxWidth: '1200px',
         }}>
-          <h2 style={{ color: '#333', marginBottom: '25px', textAlign: 'center' }}>월간 리포트</h2>
-
-          <div style={{ marginBottom: '30px', display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'flex-end' }}>
-            <div>
-              <label htmlFor="period" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>기간:</label>
-              <input type="month" id="period" value={period} onChange={(e) => setPeriod(e.target.value)}
-                style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
-            </div>
-          </div>
+          <h2 style={{ color: '#333', marginBottom: '25px', textAlign: 'center' }}>종합 리포트</h2>
 
           {isLoading ? (
             <div style={{ textAlign: 'center', padding: '20px' }}>리포트 로딩 중...</div>
           ) : isError ? (
             <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>리포트 에러 발생: {error?.message}</div>
-          ) : userReport && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-              <div>
-                <h3 style={{ color: '#333', marginBottom: '15px', textAlign: 'center' }}>카테고리별 분포</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={userReport.categoryBreakdown || []}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="totalAmount"
-                      nameKey="categoryName"
-                      label={({ categoryName, percent }) => `${categoryName}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {(userReport.categoryBreakdown || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+          ) : reportData && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px', textAlign: 'center' }}>
+                <div style={{ backgroundColor: '#e9f7ef', padding: '20px', borderRadius: '8px' }}>
+                  <h3 style={{ color: '#28a745' }}>총 ESG 기여도</h3>
+                  <p style={{ fontSize: '2em', fontWeight: 'bold', margin: '10px 0' }}>{reportData.totalEsgScore.toLocaleString()}</p>
+                </div>
+                <div style={{ backgroundColor: '#e8f4fd', padding: '20px', borderRadius: '8px' }}>
+                  <h3 style={{ color: '#007bff' }}>총 소비 금액</h3>
+                  <p style={{ fontSize: '2em', fontWeight: 'bold', margin: '10px 0' }}>{reportData.totalConsumption.toLocaleString()} 원</p>
+                </div>
+                <div style={{ backgroundColor: '#fff4e6', padding: '20px', borderRadius: '8px' }}>
+                  <h3 style={{ color: '#ff9800' }}>친환경 매장 결제</h3>
+                  <p style={{ fontSize: '2em', fontWeight: 'bold', margin: '10px 0' }}>{reportData.ecoFriendlyPaymentsCount} 회</p>
+                </div>
               </div>
 
-              <div>
-                <h3 style={{ color: '#333', marginBottom: '15px', textAlign: 'center' }}>TOP 매장</h3>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                  {(userReport.topMerchants || []).map((merchant, index) => (
-                    <li key={index} style={{
-                      backgroundColor: '#f9f9f9',
-                      border: '1px solid #eee',
-                      borderRadius: '8px',
-                      marginBottom: '10px',
-                      padding: '15px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
-                    }}>
-                      <span style={{ fontWeight: 'bold' }}>{merchant.merchantName}</span>
-                      <span style={{ color: '#28a745', fontWeight: 'bold' }}>{merchant.totalAmount?.toLocaleString()} 원</span>
-                    </li>
-                  ))}
-                </ul>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+                <div>
+                  <h3 style={{ color: '#333', marginBottom: '20px', textAlign: 'center' }}>카테고리별 분석</h3>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={reportData.categoryReports} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="category" type="category" width={80} />
+                      <Tooltip formatter={(value: number) => `${value.toLocaleString()} 원`} />
+                      <Legend />
+                      <Bar dataKey="totalAmount" name="소비 금액" fill="#8884d8" />
+                      <Bar dataKey="esgScore" name="ESG 점수" fill="#82ca9d" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div>
+                  <h3 style={{ color: '#333', marginBottom: '20px', textAlign: 'center' }}>ESG 기여도 높은 매장 TOP 5</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #ddd', backgroundColor: '#f8f9fa' }}>
+                        <th style={{ padding: '12px', textAlign: 'left' }}>매장명</th>
+                        <th style={{ padding: '12px', textAlign: 'center' }}>방문 횟수</th>
+                        <th style={{ padding: '12px', textAlign: 'right' }}>ESG 점수</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportData.topEsgMerchants.map((merchant) => (
+                        <tr key={merchant.merchantName} style={{ borderBottom: '1px solid #eee' }}>
+                          <td style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold' }}>{merchant.merchantName}</td>
+                          <td style={{ padding: '12px', textAlign: 'center' }}>{merchant.visitCount}</td>
+                          <td style={{ padding: '12px', textAlign: 'right', color: '#28a745', fontWeight: 'bold' }}>{merchant.esgScore.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </main>
